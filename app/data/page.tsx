@@ -19,8 +19,8 @@ export default function DataPage() {
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
 
-  const handleGenerate = () => {
-    const data = exportData();
+  const handleGenerate = async () => {
+    const data = await exportData();
     setExportJson(JSON.stringify(data, null, 2));
   };
 
@@ -37,7 +37,7 @@ export default function DataPage() {
     }
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     setStatus(null);
     const raw = importJson.trim();
     if (!raw) return;
@@ -60,7 +60,7 @@ export default function DataPage() {
     }
 
     try {
-      importData(parsed, importMode);
+      await importData(parsed, importMode);
       const setsCount = parsed.sets.length;
       const groupsCount = parsed.groups.length;
       setStatus({
@@ -147,7 +147,7 @@ export default function DataPage() {
               onClick={(e) => (e.target as HTMLTextAreaElement).select()}
             />
             <p className="text-xs text-slate-400">
-              Note: images are stored inline as base64, so the JSON may be large. This is normal.
+              Note: images are embedded as base64 in the export, so the JSON may be large. This is normal.
             </p>
           </div>
         )}

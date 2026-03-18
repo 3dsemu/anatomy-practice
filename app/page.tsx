@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import SetCard from '@/components/SetCard';
-import { getSets, deleteSet } from '@/lib/storage';
+import { getSets, deleteSet, getImage, deleteImage } from '@/lib/storage';
 import { PracticeSet } from '@/types';
 
 export default function HomePage() {
@@ -11,12 +11,26 @@ export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setSets(getSets());
+    const loadedSets = getSets();
+    setSets(loadedSets);
     setLoaded(true);
+    // Asynchronously load images from IndexedDB and merge into state.
+    loadedSets.forEach((set) => {
+      // If the set already has an image (legacy localStorage data), nothing more to do.
+      if (set.image) return;
+      getImage(set.id).then((url) => {
+        if (url) {
+          setSets((prev) =>
+            prev.map((s) => (s.id === set.id ? { ...s, image: url } : s))
+          );
+        }
+      });
+    });
   }, []);
 
   const handleDelete = (id: string) => {
     deleteSet(id);
+    deleteImage(id); // clean up IndexedDB — fire and forget
     setSets(getSets());
   };
 

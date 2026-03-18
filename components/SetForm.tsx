@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PracticeSet, Label } from '@/types';
-import { saveSet, generateId } from '@/lib/storage';
+import { saveSet, saveImage, getImage, generateId } from '@/lib/storage';
 
 interface SetFormProps {
   initialSet?: PracticeSet;
@@ -28,9 +28,27 @@ export default function SetForm({ initialSet }: SetFormProps) {
   );
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // imageFile holds the raw File when the user picks a new image (for saving to IndexedDB).
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  // imageFromDB tracks whether the current preview was loaded from IndexedDB (vs. legacy localStorage).
+  const [imageFromDB, setImageFromDB] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  // When editing an existing set, load the image from IndexedDB (or fall back to legacy localStorage image).
+  useEffect(() => {
+    if (!initialSet?.id) return;
+    getImage(initialSet.id).then((url) => {
+      if (url) {
+        setImage(url);
+        setImageFromDB(true);
+      }
+      // If not found in IndexedDB, keep whatever initialSet.image contains (legacy base64 or empty).
+    });
+  }, [initialSet?.id]);
 
   const handleImageFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
+    setImageFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
       setImage(e.target?.result as string);
@@ -88,18 +106,34 @@ export default function SetForm({ initialSet }: SetFormProps) {
       return;
     }
     setSaving(true);
+    setSaveError('');
     const now = Date.now();
     const set: PracticeSet = {
       id: initialSet?.id ?? generateId(),
       name: name.trim(),
       description: description.trim() || undefined,
-      image,
+      image, // kept for in-memory use; saveSet will strip it from localStorage
       labels: labels.map((l) => ({ letter: l.letter.trim(), answer: l.answer.trim() })),
       createdAt: initialSet?.createdAt ?? now,
       updatedAt: now,
     };
-    saveSet(set);
-    router.push('/');
+    try {
+      saveSet(set); // saves to localStorage without image field
+      if (imageFile) {
+        // User picked a new image — save it to IndexedDB.
+        await saveImage(set.id, imageFile);
+      } else if (image && !imageFromDB) {
+        // Legacy set: image was in localStorage — migrate it to IndexedDB now.
+        const blob = await fetch(image).then((r) => r.blob());
+        await saveImage(set.id, blob);
+      }
+      // If imageFromDB && !imageFile, existing IndexedDB image is left untouched.
+      router.push('/');
+    } catch (err) {
+      console.error('Failed to save set:', err);
+      setSaveError('Failed to save. Please try again.');
+      setSaving(false);
+    }
   };
 
   return (
@@ -332,6 +366,13 @@ export default function SetForm({ initialSet }: SetFormProps) {
           </button>
         </div>
       </div>
+
+      {/* Save error */}
+      {saveError && (
+        <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          {saveError}
+        </div>
+      )}
 
       {/* Save button */}
       <div className="mt-6 flex items-center justify-end gap-3">
