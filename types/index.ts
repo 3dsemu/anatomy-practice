@@ -13,6 +13,15 @@ export interface PracticeSet {
   updatedAt: number;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  setIds: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface TestAnswer {
   letter: string;
   selectedAnswer: string;
@@ -25,4 +34,11 @@ export interface TestResult {
   score: number;
   total: number;
   completedAt: number;
+}
+
+export interface ExportData {
+  version: number;
+  exportedAt: number;
+  sets: PracticeSet[];
+  groups: Group[];
 }
