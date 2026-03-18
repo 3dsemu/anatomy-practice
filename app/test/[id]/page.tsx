@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getSet, shuffleArray } from '@/lib/storage';
+import { getSet, getImage, shuffleArray } from '@/lib/storage';
 import { PracticeSet, TestResult, TestAnswer } from '@/types';
 
 type Mode = 'study' | 'test';
@@ -31,6 +31,12 @@ export default function TestPage() {
       const init: Record<string, string> = {};
       found.labels.forEach((l) => (init[l.letter] = ''));
       setAnswers(init);
+      // If the set doesn't already have an image (new system), load from IndexedDB.
+      if (!found.image) {
+        getImage(id).then((url) => {
+          if (url) setSet((prev) => (prev ? { ...prev, image: url } : prev));
+        });
+      }
     }
   }, [id, router]);
 

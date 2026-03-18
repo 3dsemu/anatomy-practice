@@ -22,10 +22,13 @@ export function getSet(id: string): PracticeSet | null {
 export function saveSet(set: PracticeSet): void {
   const sets = getSets();
   const index = sets.findIndex((s) => s.id === set.id);
+  // Strip the image field before writing to localStorage to avoid QuotaExceededError.
+  // Images are stored separately in IndexedDB via saveImage().
+  const setToStore: PracticeSet = { ...set, image: '' };
   if (index >= 0) {
-    sets[index] = set;
+    sets[index] = setToStore;
   } else {
-    sets.push(set);
+    sets.push(setToStore);
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(sets));
 }
@@ -75,30 +78,146 @@ export function deleteGroup(id: string): void {
   localStorage.setItem(GROUPS_KEY, JSON.stringify(groups));
 }
 
+// ─── IndexedDB Image Storage ─────────────────────────────────────────────────
+
+const IMAGE_DB_NAME = 'anatomy-images';
+const IMAGE_STORE_NAME = 'images';
+const IMAGE_DB_VERSION = 1;
+
+function openImageDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !window.indexedDB) {
+      reject(new Error('IndexedDB is not available'));
+      return;
+    }
+    const request = indexedDB.open(IMAGE_DB_NAME, IMAGE_DB_VERSION);
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) {
+        db.createObjectStore(IMAGE_STORE_NAME);
+      }
+    };
+    request.onsuccess = (event) => {
+      resolve((event.target as IDBOpenDBRequest).result);
+    };
+    request.onerror = (event) => {
+      reject((event.target as IDBOpenDBRequest).error);
+    };
+  });
+}
+
+/** Stores an image Blob in IndexedDB, keyed by set ID. */
+export async function saveImage(id: string, blob: Blob): Promise<void> {
+  try {
+    const db = await openImageDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IMAGE_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      const request = store.put(blob, id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      tx.oncomplete = () => db.close();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.warn('Failed to save image to IndexedDB:', err);
+    throw err;
+  }
+}
+
+/** Retrieves the image for a set from IndexedDB and returns it as a data URL, or null. */
+export async function getImage(id: string): Promise<string | null> {
+  try {
+    const db = await openImageDB();
+    const blob: Blob | undefined = await new Promise((resolve, reject) => {
+      const tx = db.transaction(IMAGE_STORE_NAME, 'readonly');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      const request = store.get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+      tx.oncomplete = () => db.close();
+    });
+    if (!blob) return null;
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** Removes the image for a set from IndexedDB. */
+export async function deleteImage(id: string): Promise<void> {
+  try {
+    const db = await openImageDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IMAGE_STORE_NAME, 'readwrite');
+      const store = tx.objectStore(IMAGE_STORE_NAME);
+      const request = store.delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      tx.oncomplete = () => db.close();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.warn('Failed to delete image from IndexedDB:', err);
+  }
+}
+
 // ─── Export / Import ─────────────────────────────────────────────────────────
 
-export function exportData(): ExportData {
+export async function exportData(): Promise<ExportData> {
+  const sets = getSets();
+  const setsWithImages = await Promise.all(
+    sets.map(async (set) => {
+      // Prefer in-memory image (legacy localStorage sets still have it),
+      // then fall back to IndexedDB.
+      const image = set.image || (await getImage(set.id)) || '';
+      return { ...set, image };
+    })
+  );
   return {
     version: 1,
     exportedAt: Date.now(),
-    sets: getSets(),
+    sets: setsWithImages,
     groups: getGroups(),
   };
 }
 
-export function importData(data: ExportData, mode: 'merge' | 'replace' = 'merge'): void {
+export async function importData(
+  data: ExportData,
+  mode: 'merge' | 'replace' = 'merge'
+): Promise<void> {
   const incomingSets = Array.isArray(data.sets) ? data.sets : [];
   const incomingGroups = Array.isArray(data.groups) ? data.groups : [];
 
+  // Save images to IndexedDB and strip them from sets before writing to localStorage.
+  const setsToStore: PracticeSet[] = await Promise.all(
+    incomingSets.map(async (set) => {
+      if (set.image) {
+        try {
+          const blob = await fetch(set.image).then((r) => r.blob());
+          await saveImage(set.id, blob);
+        } catch (err) {
+          console.warn(`Failed to import image for set ${set.id}:`, err);
+        }
+      }
+      return { ...set, image: '' };
+    })
+  );
+
   if (mode === 'replace') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(incomingSets));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(setsToStore));
     localStorage.setItem(GROUPS_KEY, JSON.stringify(incomingGroups));
     return;
   }
 
   // Merge: upsert by id
   const mergedSets = getSets();
-  for (const set of incomingSets) {
+  for (const set of setsToStore) {
     const idx = mergedSets.findIndex((s) => s.id === set.id);
     if (idx >= 0) {
       mergedSets[idx] = set;

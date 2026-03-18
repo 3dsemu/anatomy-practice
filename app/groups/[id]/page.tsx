@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getGroup, getSets, shuffleArray } from '@/lib/storage';
+import { getGroup, getSets, getImage, shuffleArray } from '@/lib/storage';
 import { Group, PracticeSet, TestAnswer, TestResult } from '@/types';
 
 type Stage = 'start' | 'testing' | 'summary';
@@ -24,6 +24,8 @@ export default function GroupPracticePage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [sets, setSets] = useState<PracticeSet[]>([]);
   const [loaded, setLoaded] = useState(false);
+  // Image URL for the currently active set in the testing stage.
+  const [currentImageUrl, setCurrentImageUrl] = useState('');
 
   // Session state
   const [stage, setStage] = useState<Stage>('start');
@@ -51,7 +53,36 @@ export default function GroupPracticePage() {
       .filter((s): s is PracticeSet => s !== undefined);
     setSets(groupSets);
     setLoaded(true);
+    // Asynchronously load images for each set from IndexedDB.
+    groupSets.forEach((set) => {
+      if (set.image) return; // already has a legacy image in localStorage
+      getImage(set.id).then((url) => {
+        if (url) {
+          setSets((prev) =>
+            prev.map((s) => (s.id === set.id ? { ...s, image: url } : s))
+          );
+        }
+      });
+    });
   }, [id, router]);
+
+  // Load image for the current set in the testing stage.
+  useEffect(() => {
+    const set = sessionSets[currentIndex];
+    if (!set) {
+      setCurrentImageUrl('');
+      return;
+    }
+    // Use the image from the set if already available (legacy or loaded into sets state).
+    if (set.image) {
+      setCurrentImageUrl(set.image);
+      return;
+    }
+    // Otherwise load from IndexedDB.
+    getImage(set.id).then((url) => {
+      setCurrentImageUrl(url ?? '');
+    });
+  }, [currentIndex, sessionSets]);
 
   const initSet = (set: PracticeSet) => {
     setShuffledOptions(shuffleArray(set.labels.map((l) => l.answer)));
@@ -407,7 +438,7 @@ export default function GroupPracticePage() {
           </div>
           <div className="image-container overflow-auto max-h-[70vh] flex items-start justify-center p-4 bg-slate-50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={currentSet.image} alt={currentSet.name} className="max-w-full rounded-lg" style={{ display: 'block' }} />
+            <img src={currentImageUrl} alt={currentSet.name} className="max-w-full rounded-lg" style={{ display: 'block' }} />
           </div>
         </div>
 
