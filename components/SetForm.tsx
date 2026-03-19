@@ -177,7 +177,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
                     setErrors((prev) => ({ ...prev, name: '' }));
                   }}
                   placeholder="e.g. Brain Anatomy, Heart Diagram"
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent ${
                     errors.name ? 'border-red-400 bg-red-50' : 'border-slate-200'
                   }`}
                 />
@@ -192,7 +192,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="e.g. Lateral view of the human brain — Chapter 4"
                   rows={2}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
                 />
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-3 w-full text-sm text-blue-600 hover:text-blue-800 font-medium py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="mt-3 w-full text-sm text-violet-600 hover:text-violet-800 font-medium py-1.5 border border-violet-200 rounded-lg hover:bg-violet-50 transition-colors"
                 >
                   Replace image
                 </button>
@@ -233,10 +233,10 @@ export default function SetForm({ initialSet }: SetFormProps) {
                 onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
                   isDragging
-                    ? 'border-blue-400 bg-blue-50'
+                    ? 'border-violet-400 bg-violet-50'
                     : errors.image
                     ? 'border-red-300 bg-red-50'
-                    : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                    : 'border-slate-200 hover:border-violet-300 hover:bg-violet-50'
                 }`}
               >
                 <div className="flex flex-col items-center gap-3 text-slate-400">
@@ -282,7 +282,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
             </h2>
             <button
               onClick={addLabel}
-              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1 text-sm text-violet-600 hover:text-violet-800 font-medium px-3 py-1.5 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -309,7 +309,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
                     onChange={(e) => updateLabel(index, 'letter', e.target.value)}
                     maxLength={4}
                     placeholder="A"
-                    className={`w-14 text-center font-bold text-sm border rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
+                    className={`w-14 text-center font-bold text-sm border rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white ${
                       errors[`letter_${index}`]
                         ? 'border-red-400'
                         : 'border-slate-200'
@@ -327,7 +327,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
                       setErrors((prev) => ({ ...prev, [`answer_${index}`]: '' }));
                     }}
                     placeholder="Structure name (e.g. Cerebrum)"
-                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${
+                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white ${
                       errors[`answer_${index}`]
                         ? 'border-red-400 bg-red-50'
                         : 'border-slate-200'
@@ -357,7 +357,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
           {/* Add more hint */}
           <button
             onClick={addLabel}
-            className="mt-3 w-full py-2.5 border border-dashed border-slate-200 rounded-lg text-sm text-slate-400 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center justify-center gap-1.5"
+            className="mt-3 w-full py-2.5 border border-dashed border-slate-200 rounded-lg text-sm text-slate-400 hover:text-violet-500 hover:border-violet-300 hover:bg-violet-50 transition-all flex items-center justify-center gap-1.5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -385,7 +385,7 @@ export default function SetForm({ initialSet }: SetFormProps) {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           {saving ? (
             <>
