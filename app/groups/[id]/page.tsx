@@ -158,7 +158,7 @@ export default function GroupPracticePage() {
   if (!loaded) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
       </div>
     );
   }
@@ -200,7 +200,7 @@ export default function GroupPracticePage() {
                   key={set.id}
                   className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100"
                 >
-                  <span className="w-6 h-6 bg-violet-100 text-violet-700 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="w-6 h-6 bg-pink-100 text-pink-600 text-xs font-bold rounded-full flex items-center justify-center flex-shrink-0">
                     {i + 1}
                   </span>
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
@@ -234,7 +234,7 @@ export default function GroupPracticePage() {
                   key={value}
                   className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
                     order === value
-                      ? 'border-violet-500 bg-violet-50'
+                      ? 'border-pink-400 bg-pink-50'
                       : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
@@ -244,7 +244,7 @@ export default function GroupPracticePage() {
                     value={value}
                     checked={order === value}
                     onChange={() => setOrder(value)}
-                    className="text-violet-600"
+                    className="text-pink-500"
                   />
                   <div>
                     <p className="font-medium text-slate-800 text-sm">{label}</p>
@@ -259,12 +259,12 @@ export default function GroupPracticePage() {
               onClick={() => setShuffleQuestions((prev) => !prev)}
               className={`flex items-center gap-3 p-3.5 rounded-xl border-2 w-full transition-all ${
                 shuffleQuestions
-                  ? 'border-violet-500 bg-violet-50'
+                  ? 'border-pink-400 bg-pink-50'
                   : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
               <span className={`relative inline-flex h-5 w-9 items-center rounded-full flex-shrink-0 transition-colors ${
-                shuffleQuestions ? 'bg-violet-500' : 'bg-slate-300'
+                shuffleQuestions ? 'bg-pink-400' : 'bg-slate-300'
               }`}>
                 <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
                   shuffleQuestions ? 'translate-x-4' : 'translate-x-0.5'
@@ -278,7 +278,7 @@ export default function GroupPracticePage() {
 
             <button
               onClick={startSession}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -321,20 +321,20 @@ export default function GroupPracticePage() {
             overallPct === 100
               ? 'bg-green-50 border border-green-200'
               : overallPct >= 70
-              ? 'bg-violet-50 border border-violet-200'
+              ? 'bg-pink-50 border border-pink-200'
               : 'bg-orange-50 border border-orange-200'
           }`}
         >
           <div
             className={`text-5xl font-bold ${
-              overallPct === 100 ? 'text-green-600' : overallPct >= 70 ? 'text-violet-600' : 'text-orange-600'
+              overallPct === 100 ? 'text-green-600' : overallPct >= 70 ? 'text-pink-500' : 'text-orange-600'
             }`}
           >
             {totalScore}/{totalQuestions}
           </div>
           <div
             className={`text-base font-medium mt-1 ${
-              overallPct === 100 ? 'text-green-700' : overallPct >= 70 ? 'text-violet-700' : 'text-orange-700'
+              overallPct === 100 ? 'text-green-700' : overallPct >= 70 ? 'text-pink-600' : 'text-orange-700'
             }`}
           >
             Overall Score &mdash;{' '}
@@ -360,7 +360,7 @@ export default function GroupPracticePage() {
                     <div className="h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
-                          pct === 100 ? 'bg-green-500' : pct >= 70 ? 'bg-violet-500' : 'bg-orange-400'
+                          pct === 100 ? 'bg-green-500' : pct >= 70 ? 'bg-pink-400' : 'bg-orange-400'
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -368,7 +368,7 @@ export default function GroupPracticePage() {
                   </div>
                   <span
                     className={`text-sm font-semibold flex-shrink-0 ${
-                      pct === 100 ? 'text-green-600' : pct >= 70 ? 'text-violet-600' : 'text-orange-600'
+                      pct === 100 ? 'text-green-600' : pct >= 70 ? 'text-pink-500' : 'text-orange-600'
                     }`}
                   >
                     {r.score}/{r.total}
@@ -382,7 +382,7 @@ export default function GroupPracticePage() {
         <div className="flex gap-3">
           <button
             onClick={() => { setStage('start'); setSetResults({}); }}
-            className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -432,7 +432,7 @@ export default function GroupPracticePage() {
           </div>
           <div className="h-1.5 bg-slate-200 rounded-full mt-1.5 overflow-hidden">
             <div
-              className="h-full bg-violet-500 rounded-full transition-all duration-500"
+              className="h-full bg-pink-400 rounded-full transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -504,7 +504,7 @@ export default function GroupPracticePage() {
                             ? res.isCorrect
                               ? 'bg-green-500 text-white'
                               : 'bg-red-500 text-white'
-                            : 'bg-violet-600 text-white'
+                            : 'bg-pink-500 text-white'
                         }`}
                       >
                         {label.letter}
@@ -527,7 +527,7 @@ export default function GroupPracticePage() {
                           <select
                             value={answers[label.letter] ?? ''}
                             onChange={(e) => setAnswers((prev) => ({ ...prev, [label.letter]: e.target.value }))}
-                            className="w-full text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                            className="w-full text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
                           >
                             <option value="">Select answer…</option>
                             {shuffledOptions.map((opt) => (
@@ -562,7 +562,7 @@ export default function GroupPracticePage() {
                   <button
                     onClick={handleSubmit}
                     disabled={!allAnswered}
-                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-sm"
+                    className="w-full bg-pink-500 hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-sm"
                   >
                     {allAnswered
                       ? 'Submit Answers'
@@ -575,20 +575,20 @@ export default function GroupPracticePage() {
                         scorePercent === 100
                           ? 'bg-green-50 border border-green-200'
                           : scorePercent >= 70
-                          ? 'bg-violet-50 border border-violet-200'
+                          ? 'bg-pink-50 border border-pink-200'
                           : 'bg-orange-50 border border-orange-200'
                       }`}
                     >
                       <div
                         className={`text-3xl font-bold ${
-                          scorePercent === 100 ? 'text-green-600' : scorePercent >= 70 ? 'text-violet-600' : 'text-orange-600'
+                          scorePercent === 100 ? 'text-green-600' : scorePercent >= 70 ? 'text-pink-500' : 'text-orange-600'
                         }`}
                       >
                         {result.score}/{result.total}
                       </div>
                       <div
                         className={`text-sm font-medium mt-0.5 ${
-                          scorePercent === 100 ? 'text-green-700' : scorePercent >= 70 ? 'text-violet-700' : 'text-orange-700'
+                          scorePercent === 100 ? 'text-green-700' : scorePercent >= 70 ? 'text-pink-600' : 'text-orange-700'
                         }`}
                       >
                         {scorePercent}%
@@ -603,7 +603,7 @@ export default function GroupPracticePage() {
                       </button>
                       <button
                         onClick={handleNextSet}
-                        className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+                        className="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
                       >
                         {isLastSet ? 'Finish' : 'Next Set →'}
                       </button>

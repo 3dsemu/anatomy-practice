@@ -12,8 +12,8 @@ body {
 
 /* Image upload drag-over state */
 .drag-over {
-  border-color: #7c3aed !important;
-  background-color: #f5f3ff !important;
+  border-color: #ec4899 !important;
+  background-color: #fce7f3 !important;
 }
 
 /* Custom scrollbar for image container */

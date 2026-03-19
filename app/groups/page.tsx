@@ -82,7 +82,7 @@ export default function GroupsPage() {
   if (!loaded) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function GroupsPage() {
         </div>
         <button
           onClick={openCreate}
-          className="hidden sm:inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
+          className="hidden sm:inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-medium px-5 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -113,8 +113,8 @@ export default function GroupsPage() {
       {/* Empty state */}
       {groups.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-24 h-24 bg-purple-50 rounded-full flex items-center justify-center mb-6">
-            <svg className="w-12 h-12 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mb-6">
+            <svg className="w-12 h-12 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
@@ -124,7 +124,7 @@ export default function GroupsPage() {
           </p>
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-md"
+            className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-md"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -145,7 +145,7 @@ export default function GroupsPage() {
                 key={group.id}
                 className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
               >
-                <div className="h-1.5 bg-gradient-to-r from-violet-400 to-violet-600" />
+                <div className="h-1.5 bg-gradient-to-r from-pink-300 to-pink-500" />
                 <div className="p-5 flex flex-col flex-1">
                   <h3 className="font-semibold text-slate-900 text-lg leading-tight">{group.name}</h3>
                   {group.description && (
@@ -153,10 +153,10 @@ export default function GroupsPage() {
                   )}
 
                   <div className="mt-3 flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 text-xs font-medium px-2 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 bg-pink-50 text-pink-600 text-xs font-medium px-2 py-1 rounded-full">
                       {groupSets.length} set{groupSets.length !== 1 ? 's' : ''}
                     </span>
-                    <span className="inline-flex items-center gap-1 bg-violet-50 text-violet-700 text-xs font-medium px-2 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 bg-pink-50 text-pink-600 text-xs font-medium px-2 py-1 rounded-full">
                       {totalLabels} label{totalLabels !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -187,7 +187,7 @@ export default function GroupsPage() {
                   <div className="mt-4 flex gap-2 pt-4 border-t border-slate-100 mt-auto">
                     <Link
                       href={`/groups/${group.id}`}
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium py-2 rounded-lg transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -222,7 +222,7 @@ export default function GroupsPage() {
           {/* Add new group card */}
           <button
             onClick={openCreate}
-            className="bg-white rounded-xl border-2 border-dashed border-slate-200 hover:border-purple-400 hover:bg-purple-50 transition-all flex flex-col items-center justify-center py-12 gap-3 text-slate-400 hover:text-purple-500 min-h-[200px]"
+            className="bg-white rounded-xl border-2 border-dashed border-slate-200 hover:border-pink-400 hover:bg-pink-50 transition-all flex flex-col items-center justify-center py-12 gap-3 text-slate-400 hover:text-pink-500 min-h-[200px]"
           >
             <div className="w-12 h-12 rounded-full border-2 border-current flex items-center justify-center">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,7 +255,7 @@ export default function GroupsPage() {
                   value={formName}
                   onChange={(e) => { setFormName(e.target.value); setNameError(''); }}
                   placeholder="e.g. Brain Anatomy Unit"
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent ${
+                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
                     nameError ? 'border-red-400' : 'border-slate-200'
                   }`}
                 />
@@ -270,7 +270,7 @@ export default function GroupsPage() {
                   onChange={(e) => setFormDesc(e.target.value)}
                   placeholder="Optional description..."
                   rows={2}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
                 />
               </div>
 
@@ -292,7 +292,7 @@ export default function GroupsPage() {
                           type="checkbox"
                           checked={formSetIds.includes(set.id)}
                           onChange={() => toggleSet(set.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                          className="w-4 h-4 rounded border-slate-300 text-pink-500 focus:ring-pink-400"
                         />
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
                           {set.image && (
@@ -320,7 +320,7 @@ export default function GroupsPage() {
               </button>
               <button
                 onClick={handleSave}
-                className="px-5 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors"
+                className="px-5 py-2 text-sm font-semibold text-white bg-pink-500 hover:bg-pink-600 rounded-lg transition-colors"
               >
                 {editingGroup ? 'Save Changes' : 'Create Group'}
               </button>
