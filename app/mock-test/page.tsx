@@ -6,6 +6,7 @@ import { getGroups, getSets, getImage, shuffleArray } from '@/lib/storage';
 import { Group, PracticeSet } from '@/types';
 
 type Stage = 'setup' | 'testing' | 'results';
+type SetOrder = 'inOrder' | 'shuffled';
 
 interface MockLabel {
   setId: string;
@@ -37,6 +38,8 @@ export default function MockTestPage() {
   const [mockResult, setMockResult] = useState<MockResult | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const [testSets, setTestSets] = useState<PracticeSet[]>([]);
+  const [setOrder, setSetOrder] = useState<SetOrder>('inOrder');
   // Map of setId → image data URL (loaded from IndexedDB)
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
@@ -85,7 +88,9 @@ export default function MockTestPage() {
   const startTest = async () => {
     if (selectedSets.length === 0) return;
 
-    const labels: MockLabel[] = selectedSets.flatMap((set) => {
+    const orderedSets = setOrder === 'shuffled' ? shuffleArray([...selectedSets]) : [...selectedSets];
+
+    const labels: MockLabel[] = orderedSets.flatMap((set) => {
       const setLabels = shuffleQuestions ? shuffleArray([...set.labels]) : set.labels;
       return setLabels.map((l) => ({
         setId: set.id,
@@ -96,14 +101,15 @@ export default function MockTestPage() {
       }));
     });
 
-    // All unique answers as dropdown options, shuffled
-    const options = shuffleArray([
-      ...new Set(selectedSets.flatMap((s) => s.labels.map((l) => l.answer))),
-    ]);
+    // All unique answers as dropdown options, sorted alphabetically
+    const options = [...new Set(orderedSets.flatMap((s) => s.labels.map((l) => l.answer)))].sort(
+      (a, b) => a.localeCompare(b)
+    );
 
     const init: Record<string, string> = {};
     labels.forEach((l) => (init[l.uniqueKey] = ''));
 
+    setTestSets(orderedSets);
     setMockLabels(labels);
     setAllOptions(options);
     setAnswers(init);
@@ -113,7 +119,7 @@ export default function MockTestPage() {
     // Load images from IndexedDB for sets that don't have a legacy image
     const newImageUrls: Record<string, string> = {};
     await Promise.all(
-      selectedSets.map(async (set) => {
+      orderedSets.map(async (set) => {
         if (set.image) {
           newImageUrls[set.id] = set.image;
         } else {
@@ -260,6 +266,41 @@ export default function MockTestPage() {
               </div>
             </div>
 
+            {/* Set order */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-5">
+              <h2 className="text-base font-semibold text-slate-800 mb-3">Set Order</h2>
+              <div className="space-y-2">
+                {(
+                  [
+                    { value: 'inOrder', label: 'In Order', desc: 'Test sets in the order listed above' },
+                    { value: 'shuffled', label: 'Shuffled', desc: 'Test sets in a random order' },
+                  ] as { value: SetOrder; label: string; desc: string }[]
+                ).map(({ value, label, desc }) => (
+                  <label
+                    key={value}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                      setOrder === value
+                        ? 'border-violet-500 bg-violet-50'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="setOrder"
+                      value={value}
+                      checked={setOrder === value}
+                      onChange={() => setSetOrder(value)}
+                      className="text-violet-600"
+                    />
+                    <div>
+                      <p className="font-medium text-slate-800 text-sm">{label}</p>
+                      <p className="text-slate-500 text-xs mt-0.5">{desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {/* Shuffle questions toggle */}
             <button
               type="button"
@@ -347,7 +388,7 @@ export default function MockTestPage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-6">
           <h2 className="text-base font-semibold text-slate-800 mb-3">Breakdown by Set</h2>
           <div className="space-y-3">
-            {selectedSets.map((set) => {
+            {testSets.map((set) => {
               const r = mockResult.bySet[set.id];
               if (!r) return null;
               const p = Math.round((r.correct / r.total) * 100);
@@ -402,7 +443,7 @@ export default function MockTestPage() {
   const answeredCount = Object.values(answers).filter((a) => a !== '').length;
 
   // Group labels by set for display
-  const groupedLabels = selectedSets.map((set) => ({
+  const groupedLabels = testSets.map((set) => ({
     set,
     labels: mockLabels.filter((l) => l.setId === set.id),
   }));
@@ -433,9 +474,9 @@ export default function MockTestPage() {
         {/* Left: Image viewer */}
         <div className="lg:flex-1 flex flex-col gap-3">
           {/* Thumbnail strip */}
-          {selectedSets.length > 1 && (
+          {testSets.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {selectedSets.map((set, i) => (
+              {testSets.map((set, i) => (
                 <button
                   key={set.id}
                   onClick={() => setActiveImageIdx(i)}
@@ -455,9 +496,9 @@ export default function MockTestPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1">
             <div className="p-3 border-b border-slate-100 flex items-center justify-between">
               <span className="text-sm font-medium text-slate-700 truncate">
-                {selectedSets[activeImageIdx]?.name}
+                {testSets[activeImageIdx]?.name}
               </span>
-              {selectedSets.length > 1 && (
+              {testSets.length > 1 && (
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                   <button
                     onClick={() => setActiveImageIdx((i) => Math.max(0, i - 1))}
@@ -468,10 +509,10 @@ export default function MockTestPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <span className="text-xs text-slate-400">{activeImageIdx + 1}/{selectedSets.length}</span>
+                  <span className="text-xs text-slate-400">{activeImageIdx + 1}/{testSets.length}</span>
                   <button
-                    onClick={() => setActiveImageIdx((i) => Math.min(selectedSets.length - 1, i + 1))}
-                    disabled={activeImageIdx === selectedSets.length - 1}
+                    onClick={() => setActiveImageIdx((i) => Math.min(testSets.length - 1, i + 1))}
+                    disabled={activeImageIdx === testSets.length - 1}
                     className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 transition-colors"
                   >
                     <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -482,11 +523,11 @@ export default function MockTestPage() {
               )}
             </div>
             <div className="image-container overflow-auto max-h-[65vh] flex items-start justify-center p-4 bg-slate-50">
-              {selectedSets[activeImageIdx] && (
+              {testSets[activeImageIdx] && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={imageUrls[selectedSets[activeImageIdx].id] ?? selectedSets[activeImageIdx].image}
-                  alt={selectedSets[activeImageIdx].name}
+                  src={imageUrls[testSets[activeImageIdx].id] ?? testSets[activeImageIdx].image}
+                  alt={testSets[activeImageIdx].name}
                   className="max-w-full rounded-lg"
                   style={{ display: 'block' }}
                 />
