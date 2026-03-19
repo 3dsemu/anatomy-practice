@@ -100,7 +100,7 @@ export default function TestPage() {
   if (!set) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
       </div>
     );
   }
@@ -168,7 +168,7 @@ export default function TestPage() {
         >
           <span className="text-sm text-slate-600 font-medium group-hover:text-slate-800 transition-colors">Shuffle questions</span>
           <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-            shuffleQuestions ? 'bg-violet-500' : 'bg-slate-300'
+            shuffleQuestions ? 'bg-pink-400' : 'bg-slate-300'
           }`}>
             <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
               shuffleQuestions ? 'translate-x-4' : 'translate-x-0.5'
@@ -234,7 +234,7 @@ export default function TestPage() {
                           ? res.isCorrect
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'
-                          : 'bg-violet-600 text-white'
+                          : 'bg-pink-500 text-white'
                       }`}>
                         {label.letter}
                       </div>
@@ -262,7 +262,7 @@ export default function TestPage() {
                             onChange={(e) =>
                               setAnswers((prev) => ({ ...prev, [label.letter]: e.target.value }))
                             }
-                            className="w-full text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                            className="w-full text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
                           >
                             <option value="">Select answer…</option>
                             {shuffledOptions.map((opt) => (
@@ -301,7 +301,7 @@ export default function TestPage() {
                   <button
                     onClick={handleSubmit}
                     disabled={!allAnswered}
-                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                    className="w-full bg-pink-500 hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -315,16 +315,16 @@ export default function TestPage() {
                       scorePercent === 100
                         ? 'bg-green-50 border border-green-200'
                         : scorePercent >= 70
-                        ? 'bg-violet-50 border border-violet-200'
+                        ? 'bg-pink-50 border border-pink-200'
                         : 'bg-orange-50 border border-orange-200'
                     }`}>
                       <div className={`text-4xl font-bold ${
-                        scorePercent === 100 ? 'text-green-600' : scorePercent >= 70 ? 'text-violet-600' : 'text-orange-600'
+                        scorePercent === 100 ? 'text-green-600' : scorePercent >= 70 ? 'text-pink-500' : 'text-orange-600'
                       }`}>
                         {result.score}/{result.total}
                       </div>
                       <div className={`text-sm font-medium mt-0.5 ${
-                        scorePercent === 100 ? 'text-green-700' : scorePercent >= 70 ? 'text-violet-700' : 'text-orange-700'
+                        scorePercent === 100 ? 'text-green-700' : scorePercent >= 70 ? 'text-pink-600' : 'text-orange-700'
                       }`}>
                         {scorePercent === 100
                           ? 'Perfect score!'
