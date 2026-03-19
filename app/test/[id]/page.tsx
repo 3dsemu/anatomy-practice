@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSet, getImage, shuffleArray } from '@/lib/storage';
-import { PracticeSet, TestResult, TestAnswer } from '@/types';
+import { Label, PracticeSet, TestResult, TestAnswer } from '@/types';
 
 type Mode = 'study' | 'test';
 
@@ -18,6 +18,8 @@ export default function TestPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<TestResult | null>(null);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const [displayLabels, setDisplayLabels] = useState<PracticeSet['labels']>([]);
 
   useEffect(() => {
     const found = getSet(id);
@@ -25,8 +27,9 @@ export default function TestPage() {
       router.push('/');
     } else {
       setSet(found);
-      // Shuffle all answer options once on mount
-      setShuffledOptions(shuffleArray(found.labels.map((l) => l.answer)));
+      setDisplayLabels(found.labels);
+      // Deduplicate and shuffle all answer options once on mount
+      setShuffledOptions(shuffleArray([...new Set(found.labels.map((l) => l.answer))]));
       // Initialize answers as empty
       const init: Record<string, string> = {};
       found.labels.forEach((l) => (init[l.letter] = ''));
@@ -68,8 +71,24 @@ export default function TestPage() {
     set.labels.forEach((l) => (init[l.letter] = ''));
     setAnswers(init);
     setResult(null);
-    // Re-shuffle options
-    setShuffledOptions(shuffleArray(set.labels.map((l) => l.answer)));
+    // Re-shuffle options (deduplicated)
+    setShuffledOptions(shuffleArray([...new Set(set.labels.map((l) => l.answer))]));
+    // Re-shuffle question order if enabled
+    if (shuffleQuestions) {
+      setDisplayLabels(shuffleArray([...set.labels]));
+    }
+  };
+
+  const handleShuffleToggle = () => {
+    if (!set) return;
+    const next = !shuffleQuestions;
+    setShuffleQuestions(next);
+    setDisplayLabels(next ? shuffleArray([...set.labels]) : [...set.labels]);
+    // Reset answers and result when toggling
+    const init: Record<string, string> = {};
+    set.labels.forEach((l) => (init[l.letter] = ''));
+    setAnswers(init);
+    setResult(null);
   };
 
   const switchMode = (m: Mode) => {
@@ -81,7 +100,7 @@ export default function TestPage() {
   if (!set) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
       </div>
     );
   }
@@ -117,27 +136,44 @@ export default function TestPage() {
         </Link>
       </div>
 
-      {/* Mode tabs */}
-      <div className="flex bg-slate-100 rounded-xl p-1 w-fit mb-6">
+      {/* Mode tabs + Shuffle toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <div className="flex bg-slate-100 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => switchMode('study')}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+              mode === 'study'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Study
+          </button>
+          <button
+            onClick={() => switchMode('test')}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+              mode === 'test'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Test
+          </button>
+        </div>
         <button
-          onClick={() => switchMode('study')}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-            mode === 'study'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
+          type="button"
+          onClick={handleShuffleToggle}
+          className="flex items-center gap-2 cursor-pointer select-none group"
+          title="Shuffle the order questions are shown"
         >
-          Study
-        </button>
-        <button
-          onClick={() => switchMode('test')}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-            mode === 'test'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          Test
+          <span className="text-sm text-slate-600 font-medium group-hover:text-slate-800 transition-colors">Shuffle questions</span>
+          <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+            shuffleQuestions ? 'bg-violet-500' : 'bg-slate-300'
+          }`}>
+            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+              shuffleQuestions ? 'translate-x-4' : 'translate-x-0.5'
+            }`} />
+          </span>
         </button>
       </div>
 
@@ -181,7 +217,7 @@ export default function TestPage() {
 
             {/* Labels list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
-              {set.labels.map((label) => {
+              {displayLabels.map((label) => {
                 const res = result?.answers.find((a) => a.letter === label.letter);
                 return (
                   <div key={label.letter} className={`rounded-lg border transition-all ${
@@ -198,7 +234,7 @@ export default function TestPage() {
                           ? res.isCorrect
                             ? 'bg-green-500 text-white'
                             : 'bg-red-500 text-white'
-                          : 'bg-blue-600 text-white'
+                          : 'bg-violet-600 text-white'
                       }`}>
                         {label.letter}
                       </div>
@@ -226,7 +262,7 @@ export default function TestPage() {
                             onChange={(e) =>
                               setAnswers((prev) => ({ ...prev, [label.letter]: e.target.value }))
                             }
-                            className="w-full text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                           >
                             <option value="">Select answer…</option>
                             {shuffledOptions.map((opt) => (
@@ -265,7 +301,7 @@ export default function TestPage() {
                   <button
                     onClick={handleSubmit}
                     disabled={!allAnswered}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -279,16 +315,16 @@ export default function TestPage() {
                       scorePercent === 100
                         ? 'bg-green-50 border border-green-200'
                         : scorePercent >= 70
-                        ? 'bg-blue-50 border border-blue-200'
+                        ? 'bg-violet-50 border border-violet-200'
                         : 'bg-orange-50 border border-orange-200'
                     }`}>
                       <div className={`text-4xl font-bold ${
-                        scorePercent === 100 ? 'text-green-600' : scorePercent >= 70 ? 'text-blue-600' : 'text-orange-600'
+                        scorePercent === 100 ? 'text-green-600' : scorePercent >= 70 ? 'text-violet-600' : 'text-orange-600'
                       }`}>
                         {result.score}/{result.total}
                       </div>
                       <div className={`text-sm font-medium mt-0.5 ${
-                        scorePercent === 100 ? 'text-green-700' : scorePercent >= 70 ? 'text-blue-700' : 'text-orange-700'
+                        scorePercent === 100 ? 'text-green-700' : scorePercent >= 70 ? 'text-violet-700' : 'text-orange-700'
                       }`}>
                         {scorePercent === 100
                           ? 'Perfect score!'
