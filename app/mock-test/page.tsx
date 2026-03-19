@@ -16,10 +16,21 @@ interface MockLabel {
   uniqueKey: string; // `${setId}::${letter}`
 }
 
+interface QuestionResult {
+  uniqueKey: string;
+  setId: string;
+  setName: string;
+  letter: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+}
+
 interface MockResult {
   score: number;
   total: number;
   bySet: Record<string, { setName: string; correct: number; total: number }>;
+  questions: QuestionResult[];
 }
 
 export default function MockTestPage() {
@@ -42,6 +53,7 @@ export default function MockTestPage() {
   const [setOrder, setSetOrder] = useState<SetOrder>('inOrder');
   // Map of setId → image data URL (loaded from IndexedDB)
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [reviewFilter, setReviewFilter] = useState<'all' | 'correct' | 'wrong'>('wrong');
 
   useEffect(() => {
     const loadedGroups = getGroups();
@@ -139,22 +151,34 @@ export default function MockTestPage() {
   );
 
   const handleSubmit = () => {
-    // Calculate per-set breakdown
+    // Calculate per-set breakdown and track individual questions
     const bySet: MockResult['bySet'] = {};
+    const questions: QuestionResult[] = [];
     let totalCorrect = 0;
 
     mockLabels.forEach((ml) => {
       if (!bySet[ml.setId]) bySet[ml.setId] = { setName: ml.setName, correct: 0, total: 0 };
       bySet[ml.setId].total++;
-      const isCorrect =
-        (answers[ml.uniqueKey] ?? '').trim().toLowerCase() === ml.answer.trim().toLowerCase();
+      const userAnswer = answers[ml.uniqueKey] ?? '';
+      const isCorrect = userAnswer.trim().toLowerCase() === ml.answer.trim().toLowerCase();
+      
       if (isCorrect) {
         bySet[ml.setId].correct++;
         totalCorrect++;
       }
+
+      questions.push({
+        uniqueKey: ml.uniqueKey,
+        setId: ml.setId,
+        setName: ml.setName,
+        letter: ml.letter,
+        userAnswer,
+        correctAnswer: ml.answer,
+        isCorrect,
+      });
     });
 
-    setMockResult({ score: totalCorrect, total: mockLabels.length, bySet });
+    setMockResult({ score: totalCorrect, total: mockLabels.length, bySet, questions });
     setStage('results');
   };
 
@@ -415,6 +439,83 @@ export default function MockTestPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* Review Answers */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-6">
+          <h2 className="text-base font-semibold text-slate-800 mb-4">Review Answers</h2>
+          
+          {/* Filter tabs */}
+          <div className="flex gap-2 mb-4 border-b border-slate-200">
+            {(
+              [
+                { value: 'wrong' as const, label: 'Wrong Answers', count: mockResult.questions.filter((q) => !q.isCorrect).length },
+                { value: 'correct' as const, label: 'Correct Answers', count: mockResult.questions.filter((q) => q.isCorrect).length },
+                { value: 'all' as const, label: 'All Answers', count: mockResult.questions.length },
+              ]
+            ).map(({ value, label, count }) => (
+              <button
+                key={value}
+                onClick={() => setReviewFilter(value)}
+                className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  reviewFilter === value
+                    ? 'border-violet-600 text-violet-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
+          </div>
+
+          {/* Questions list */}
+          <div className="space-y-3">
+            {mockResult.questions
+              .filter((q) => {
+                if (reviewFilter === 'correct') return q.isCorrect;
+                if (reviewFilter === 'wrong') return !q.isCorrect;
+                return true;
+              })
+              .map((q) => (
+                <div
+                  key={q.uniqueKey}
+                  className={`p-4 rounded-lg border-2 ${
+                    q.isCorrect
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-orange-200 bg-orange-50'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold text-white" style={{
+                      backgroundColor: q.isCorrect ? '#10b981' : '#f97316'
+                    }}>
+                      {q.letter}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-slate-600 mb-2">{q.setName}</p>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-slate-600 font-medium">Your answer:</p>
+                          <p className={`text-sm font-semibold ${
+                            q.isCorrect ? 'text-green-700' : 'text-orange-700'
+                          }`}>
+                            {q.userAnswer || '(not answered)'}
+                          </p>
+                        </div>
+                        {!q.isCorrect && (
+                          <div>
+                            <p className="text-xs text-slate-600 font-medium">Correct answer:</p>
+                            <p className="text-sm font-semibold text-green-700">
+                              {q.correctAnswer}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
 
