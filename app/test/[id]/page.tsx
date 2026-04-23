@@ -28,8 +28,10 @@ export default function TestPage() {
     } else {
       setSet(found);
       setDisplayLabels(found.labels);
-      // Deduplicate and shuffle all answer options once on mount
-      setShuffledOptions(shuffleArray([...new Set(found.labels.map((l) => l.answer))]));
+      // Deduplicate answer options and sort alphabetically
+      setShuffledOptions(
+        [...new Set(found.labels.map((l) => l.answer))].sort((a, b) => a.localeCompare(b))
+      );
       // Initialize answers as empty
       const init: Record<string, string> = {};
       found.labels.forEach((l) => (init[l.letter] = ''));
@@ -71,8 +73,10 @@ export default function TestPage() {
     set.labels.forEach((l) => (init[l.letter] = ''));
     setAnswers(init);
     setResult(null);
-    // Re-shuffle options (deduplicated)
-    setShuffledOptions(shuffleArray([...new Set(set.labels.map((l) => l.answer))]));
+    // Reset options to alphabetical order (deduplicated)
+    setShuffledOptions(
+      [...new Set(set.labels.map((l) => l.answer))].sort((a, b) => a.localeCompare(b))
+    );
     // Re-shuffle question order if enabled
     if (shuffleQuestions) {
       setDisplayLabels(shuffleArray([...set.labels]));

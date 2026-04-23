@@ -44,7 +44,9 @@ export default function MockTestPage() {
   // Test state
   const [stage, setStage] = useState<Stage>('setup');
   const [mockLabels, setMockLabels] = useState<MockLabel[]>([]);
-  const [allOptions, setAllOptions] = useState<string[]>([]);
+  // Options per set id: each set's dropdown shows only words from the group(s)
+  // that set belongs to within the selected groups.
+  const [optionsBySetId, setOptionsBySetId] = useState<Record<string, string[]>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [mockResult, setMockResult] = useState<MockResult | null>(null);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
@@ -113,17 +115,35 @@ export default function MockTestPage() {
       }));
     });
 
-    // All unique answers as dropdown options, sorted alphabetically
-    const options = [...new Set(orderedSets.flatMap((s) => s.labels.map((l) => l.answer)))].sort(
-      (a, b) => a.localeCompare(b)
-    );
+    // Build per-set options: for each set, collect answers from every set that
+    // belongs to the same selected group(s), sorted alphabetically. This keeps
+    // each question's dropdown scoped to its own group rather than pooling all
+    // selected groups together.
+    const setsById = new Map(sets.map((s) => [s.id, s]));
+    const perSetOptions: Record<string, string[]> = {};
+    orderedSets.forEach((set) => {
+      const relatedSetIds = new Set<string>();
+      selectedGroups.forEach((g) => {
+        if (g.setIds.includes(set.id)) {
+          g.setIds.forEach((sid) => relatedSetIds.add(sid));
+        }
+      });
+      // Fallback: if somehow no group relation is found, use just this set's answers.
+      if (relatedSetIds.size === 0) relatedSetIds.add(set.id);
+      const answersInScope = new Set<string>();
+      relatedSetIds.forEach((sid) => {
+        const s = setsById.get(sid);
+        if (s) s.labels.forEach((l) => answersInScope.add(l.answer));
+      });
+      perSetOptions[set.id] = [...answersInScope].sort((a, b) => a.localeCompare(b));
+    });
 
     const init: Record<string, string> = {};
     labels.forEach((l) => (init[l.uniqueKey] = ''));
 
     setTestSets(orderedSets);
     setMockLabels(labels);
-    setAllOptions(options);
+    setOptionsBySetId(perSetOptions);
     setAnswers(init);
     setMockResult(null);
     setActiveImageIdx(0);
@@ -690,7 +710,7 @@ export default function MockTestPage() {
                           className="flex-1 text-sm border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent min-w-0"
                         >
                           <option value="">Select answer…</option>
-                          {allOptions.map((opt) => (
+                          {(optionsBySetId[ml.setId] ?? []).map((opt) => (
                             <option key={opt} value={opt}>
                               {opt}
                             </option>

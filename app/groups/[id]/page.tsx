@@ -88,8 +88,10 @@ export default function GroupPracticePage() {
 
   const initSet = (set: PracticeSet, sqOverride?: boolean) => {
     const sq = sqOverride !== undefined ? sqOverride : shuffleQuestions;
-    // Deduplicate options before shuffling
-    setShuffledOptions(shuffleArray([...new Set(set.labels.map((l) => l.answer))]));
+    // Deduplicate options and sort alphabetically
+    setShuffledOptions(
+      [...new Set(set.labels.map((l) => l.answer))].sort((a, b) => a.localeCompare(b))
+    );
     setDisplayLabels(sq ? shuffleArray([...set.labels]) : [...set.labels]);
     const init: Record<string, string> = {};
     set.labels.forEach((l) => (init[l.letter] = ''));
